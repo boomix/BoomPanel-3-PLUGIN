@@ -163,8 +163,10 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	RegPluginLibrary("boompanel3");
 	CreateNative("BoomPanel3_RegisterPlugin", Native_RegisterPlugin);
 	CreateNative("BoomPanel3_GetSocketID", Native_GetSocketID);
-	CreateNative("BoomPanel3_ReturnData", Native_ReturnData);
-	CreateNative("BoomPanel3_ReturnDataAll", Native_ReturnDataAll);
+	CreateNative("BoomPanel3_ReturnDataArray", Native_ReturnDataArray);
+	CreateNative("BoomPanel3_ReturnDataObject", Native_ReturnDataObject);
+	CreateNative("BoomPanel3_ReturnDataAllArray", Native_ReturnDataAllArray);
+	CreateNative("BoomPanel3_ReturnDataAllObject", Native_ReturnDataAllObject);
 	CreateNative("BoomPanel3_SendNotification", Native_SendNotification);
 	g_OnPluginLoad = CreateGlobalForward("BoomPanel3_OnPluginLoad", ET_Ignore);
 	
@@ -223,7 +225,7 @@ public int Native_RegisterPlugin(Handle plugin, int numParams)
 	WSplugins.PushObject(WSplugin);
 }
 
-public int Native_ReturnDataAll(Handle plugin, int numParams)
+public int Native_ReturnDataAllArray(Handle plugin, int numParams)
 {
 	//Get data
 	int size;
@@ -234,16 +236,34 @@ public int Native_ReturnDataAll(Handle plugin, int numParams)
 	JSON_Array JSONdata = view_as<JSON_Array>(GetNativeCell(2));
 	
 	//Send data
-	SendJSONToWebsocket(INVALID_WEBSOCKET_HANDLE, dataName, JSONdata);
+	SendJSONToWebsocketArray(INVALID_WEBSOCKET_HANDLE, dataName, JSONdata);
 
 	//Clear JSON
 	JSONdata.Cleanup();
 	delete JSONdata;
 }
 
-public int Native_ReturnData(Handle plugin, int numParams)
+public int Native_ReturnDataAllObject(Handle plugin, int numParams)
 {
+	//Get data
+	int size;
+	GetNativeStringLength(1, size);
+	size += 1;
+	char[] dataName = new char[size];
+	GetNativeString(1, dataName, size);
+	JSON_Array JSONdata = view_as<JSON_Array>(GetNativeCell(2));
 	
+	//Send data
+	SendJSONToWebsocketObject(INVALID_WEBSOCKET_HANDLE, dataName, JSONdata);
+
+	//Clear JSON
+	JSONdata.Cleanup();
+	delete JSONdata;
+}
+
+
+public int Native_ReturnDataArray(Handle plugin, int numParams)
+{
 	//Get data
 	WebsocketHandle client = GetNativeCell(1);
 	int size;
@@ -254,7 +274,27 @@ public int Native_ReturnData(Handle plugin, int numParams)
 	JSON_Array JSONdata = view_as<JSON_Array>(GetNativeCell(3));
 	
 	//Send data
-	SendJSONToWebsocket(client, dataName, JSONdata);
+	SendJSONToWebsocketArray(client, dataName, JSONdata);
+	
+	//Clear JSON
+	JSONdata.Cleanup();
+	delete JSONdata;
+}
+
+public int Native_ReturnDataObject(Handle plugin, int numParams)
+{
+	
+	//Get data
+	WebsocketHandle client = GetNativeCell(1);
+	int size;
+	GetNativeStringLength(2, size);
+	size += 1;
+	char[] dataName = new char[size];
+	GetNativeString(2, dataName, size);
+	JSON_Object JSONdata = view_as<JSON_Object>(GetNativeCell(3));
+	
+	//Send data
+	SendJSONToWebsocketObject(client, dataName, JSONdata);
 	
 	//Clear JSON
 	JSONdata.Cleanup();
@@ -262,7 +302,22 @@ public int Native_ReturnData(Handle plugin, int numParams)
 
 }
 
-void SendJSONToWebsocket(WebsocketHandle client, char[] dataName, JSON_Array arr) {
+void SendJSONToWebsocketObject(WebsocketHandle client, char[] dataName, JSON_Object obj) {
+
+	char data[5000];
+	obj.Encode(data, sizeof(data));
+	
+	JSON_Object newobj = new JSON_Object();
+	newobj.SetString("type", "dataobj");
+	newobj.SetString("name", dataName);
+	newobj.SetString("data", data);
+	newobj.Encode(data, sizeof(data));
+	WSSend(client, data);
+	newobj.Cleanup();
+
+}
+
+void SendJSONToWebsocketArray(WebsocketHandle client, char[] dataName, JSON_Array arr) {
 
 	char data[5000];
 	

@@ -36,19 +36,40 @@ native void BoomPanel3_SendNotification(int socketID, char[] type, char[] title,
 *
 * @param socketID			socketID, that you can get from BoomPanel3_GetSocketID
 * @param dataName			name of the data that will be used inside template
-* @param JSON_Array			array of data
+* @param JSON_Array			array with data
 * @return					void 
 */
-native void BoomPanel3_ReturnData(int socketID, char[] dataName, JSON_Array data);
+native void BoomPanel3_ReturnDataArray(int socketID, char[] dataName, JSON_Array data);
+
+/**
+* When you want to send data to one websocket client
+*
+* @param socketID			socketID, that you can get from BoomPanel3_GetSocketID
+* @param dataName			name of the data that will be used inside template
+* @param JSON_Object		object with data
+* @return					void 
+*/
+native void BoomPanel3_ReturnDataObject(int socketID, char[] dataName, JSON_Array data);
+
 
 /**
 * When you want to send data to all websocket cients
 *
 * @param dataName			name of the data that will be used inside template
-* @param JSON_Array			array of data
+* @param JSON_Array			array with data
 * @return					void
 */
-native void BoomPanel3_ReturnDataAll(char[] dataName, JSON_Array data);
+native void BoomPanel3_ReturnDataAllArray(char[] dataName, JSON_Array data);
+
+
+/**
+* When you want to send data to all websocket cients
+*
+* @param dataName			name of the data that will be used inside template
+* @param JSON_Object		object with data
+* @return					void
+*/
+native void BoomPanel3_ReturnDataAllObject(char[] dataName, JSON_Object data);
 
 
 /**
