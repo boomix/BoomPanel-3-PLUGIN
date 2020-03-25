@@ -49,7 +49,7 @@ native void BoomPanel3_ReturnDataArray(int socketID, char[] dataName, JSON_Array
 * @param JSON_Object		object with data
 * @return					void 
 */
-native void BoomPanel3_ReturnDataObject(int socketID, char[] dataName, JSON_Array data);
+native void BoomPanel3_ReturnDataObject(int socketID, char[] dataName, JSON_Object data);
 
 
 /**
