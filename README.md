@@ -19,4 +19,4 @@ Not only that the panel is lightning fast, because the connection directly from 
 * Install needed requirements
 * Edit file `addons/sourcemod/configs/BoomPanel3/admins.cfg` and add yourself as panel admin
 * Test out if plugin loads up fine, if needed edit `cfg/sourcemod/BoomPanel3.cfg` and add correct IP/PORT for websocket server
-* Now you can install other plugins that do support BoomPanel3, and you can install BoomPanel3 web/PWA client and add your server in settings
+* Now you can install other plugins that do support BoomPanel3, and you can install [BoomPanel3 web/PWA client](https://boompanel.com) and add your server in settings
