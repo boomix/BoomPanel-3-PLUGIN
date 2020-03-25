@@ -16,7 +16,7 @@
 #pragma newdecls required
 
 WebsocketHandle socket = INVALID_WEBSOCKET_HANDLE;
-ConVar CVAR_WebsocketPort;
+ConVar CVAR_WebsocketPort, CVAR_WebsocketIP;
 JSON_Array WSclients;
 JSON_Array WSplugins;
 GlobalForward g_OnPluginLoad;
@@ -34,7 +34,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-	CVAR_WebsocketPort = CreateConVar("bp_websocket_port", "7897", "Websocket port");
+	CVAR_WebsocketIP = CreateConVar("bp_websocket_ip", "0.0.0.0", "Server/websocket IP");
+	CVAR_WebsocketPort = CreateConVar("bp_websocket_port", "27021", "Websocket port");
 	WSclients = new JSON_Array();
 	WSplugins = new JSON_Array();
 
@@ -358,7 +359,7 @@ public Action OnWebsocketIncoming(WebsocketHandle websocket, WebsocketHandle new
 		
 		//Try to login
 		char login[250];
-		Format(login, sizeof(login), "/?steamid=%s&password=%s", steamid, password);
+		Format(login, sizeof(login), "/?user=%s&password=%s", username, password);
 		if(StrEqual(getPath, login)) {
 			
 			//Give handshake
@@ -488,9 +489,47 @@ void UpdateAdminsKV()
 
 public void OnAllPluginsLoaded()
 {
-	//char serverIP[40];
-	//GetServerIP(serverIP, sizeof(serverIP));
+	char serverIP[40];
+	CVAR_WebsocketIP.GetString(serverIP, sizeof(serverIP));
+	if (StrEqual(serverIP, "0.0.0.0")) {
+		GetServerIp(serverIP, sizeof(serverIP));
+	}
 
-	if(socket == INVALID_WEBSOCKET_HANDLE)
-		socket = Websocket_Open("194.19.248.93", CVAR_WebsocketPort.IntValue, OnWebsocketIncoming, OnWebsocketMasterError, OnWebsocketMasterClose);
+	if (socket == INVALID_WEBSOCKET_HANDLE)
+		socket = Websocket_Open(serverIP, CVAR_WebsocketPort.IntValue, OnWebsocketIncoming, OnWebsocketMasterError, OnWebsocketMasterClose);
 }
+
+//Stock from h3bus
+stock void GetServerIp(char[] ip, int size)
+{
+    char net_public_adr[100];
+
+    GetConVarString(FindConVar("net_public_adr"), net_public_adr, sizeof(net_public_adr));
+    if (strlen(net_public_adr) == 0)
+    {
+        GetConVarString(FindConVar("ip"), net_public_adr, sizeof(net_public_adr));
+    
+        int colonIndex = FindCharInString(net_public_adr, ':');
+        if (colonIndex == -1)
+            net_public_adr[0] = '\0';
+        else
+            net_public_adr[colonIndex] = '\0';
+    }
+    
+    if (strlen(net_public_adr) == 0)
+    {
+        int ipVal = GetConVarInt(FindConVar("hostip"));
+        int ipVals[4];
+        
+        ipVals[0] = (ipVal >> 24) & 0x000000FF;
+        ipVals[1] = (ipVal >> 16) & 0x000000FF;
+        ipVals[2] = (ipVal >> 8) & 0x000000FF;
+        ipVals[3] = ipVal & 0x000000FF;
+        
+        FormatEx(ip, size, "%d.%d.%d.%d", ipVals[0], ipVals[1], ipVals[2], ipVals[3]);
+    }
+    else
+    {
+        FormatEx(ip, size, "%s", net_public_adr);
+    }
+} 
